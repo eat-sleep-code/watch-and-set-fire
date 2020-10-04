@@ -8,7 +8,7 @@ import shutil
 import sys
 import time
 
-version = '2020.10.03'
+version = '2020.10.04'
 
 os.environ['TERM'] = 'xterm-256color'
 
