@@ -1,5 +1,5 @@
 # Watch and Set Fire
-Python-based service to watch a specific folder and when changes are detected upload them to Firebase Storage.
+This Python-based service will watch a specific folder.   When new or modified files are detected they will be upload to the specified bucket in Firebase Storage.
 
 ---
 ## Getting Started
