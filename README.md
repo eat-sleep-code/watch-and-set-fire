@@ -31,7 +31,6 @@ watchandsetfire <options>
 
 ### Options
 
-+ _--interval_ : Set the timelapse interval    *(default: 10)*
 + _--path_ : Set the path that will be watched for changes    *(required)*
 + _--recursive_ : Set whether sub directories will also be watched    *(default: True)*
 + _--includePattern_ : Set the pattern of files to watch    *(default: all files are included)*
