@@ -50,51 +50,55 @@ destination = args.destination or '/'
 # === Functions ================================================================
 
 def upload(filePath):
-    try:
-        global path
-        global destination
-        fileObject = open(filePath, 'rb')
+	try:
+		global path
+		global destination
+		fileObject = open(filePath, 'rb')
 
-        filePath = filePath.replace(path, '')    
-        if (destination.endswith('/')): 
-            destination = (destination + filePath).replace('//', '/')
-        else: 
-            destination = destination.replace('//', '/')
-        if (destination.startswith('/')):
-            destination = destination[1:]
-        blob = bucket.blob(destination)
-        blob.upload_from_file(fileObject)
-        blob.make_public()
-        console.log("Uploaded to: " + str(blob.public_url))
-    except Exception as ex:
-        console.error("Unable to upload file: " + destination + '\n ' + str(ex))
-        pass
+		filePath = filePath.replace(path, '')    
+		if (destination.endswith('/')): 
+			destination = (destination + filePath).replace('//', '/')
+		else: 
+			destination = destination.replace('//', '/')
+
+		if (destination.startswith('/')):
+			destination = destination[1:]
+
+		blob = bucket.blob(destination)
+		blob.upload_from_file(fileObject)
+		blob.make_public()
+		console.info('Uploaded to: ' + str(blob.public_url), ' ', '\n')
+	except Exception as ex:
+		console.error('Unable to upload file: ' + destination + '\n ' + str(ex))
+		pass
 
 # ------------------------------------------------------------------------------
 
 def onCreated(event):
-    console.info(str(event.src_path) + " created")
-    upload(filePath=event.src_path)
+	console.info(str(event.src_path) + ' created')
+	upload(filePath=event.src_path)
 
 # ------------------------------------------------------------------------------
 
 def onDeleted(event):
-    console.info(str(event.src_path) + " deleted")     
+	console.info(str(event.src_path) + ' deleted')     
 
 # ------------------------------------------------------------------------------
 
 def onModified(event):
-    global fileTime
-    newFileTime = os.stat(event.src_path).st_mtime
-    if (newFileTime - fileTime) > 0.5:
-        console.info(str(event.src_path) + " modified")
-        upload(filePath=event.src_path)
-    fileTime = newFileTime
+	global fileTime
+	newFileCreatedTime = os.stat(event.src_path).st_ctime
+	newFileModifiedTime = os.stat(event.src_path).st_mtime
+	if (newFileModifiedTime - newFileCreatedTime) > 0.5:
+		if (newFileModifiedTime - fileTime) > 0.5:
+			console.info(str(event.src_path) + ' modified')
+			upload(filePath=event.src_path)
+	fileTime = newFileModifiedTime
 
 # ------------------------------------------------------------------------------
 
 def onMoved(event):
-    console.info(str(event.src_path) + " moved")
+	console.info(str(event.src_path) + ' moved')
 
 
 # === Event Handler ============================================================
@@ -108,11 +112,12 @@ eventHandler.on_moved = onMoved
 # === Observer =================================================================
 
 try:
-    os.makedirs(path, exist_ok = True)
+	os.makedirs(path, exist_ok = True)
 except Exception as ex:
-    console.critical("Unable to find watched path: " + path + '\n ' + str(ex))
-    echo.on()
-    sys.exit()
+	console.critical('Unable to find watched path: ' + path + '\n ' + str(ex))
+	echo.on()
+	sys.exit()
+
 observer = Observer()
 observer.schedule(eventHandler, path, recursive=recursive)
 observer.start()
@@ -120,32 +125,33 @@ observer.start()
 # === Watch and Set Fire =======================================================
 
 try:
-    echo.off()
-    echo.clear()
-    try:
-        os.chdir(home) 
-    except:
-        pass
+	echo.off()
+	echo.clear()
+	try:
+		os.chdir(home) 
+	except:
+		pass
 
-    
-    try:
-        firebaseCredentials = credentials.Certificate("firebase-key.json")
-        initialize_app(firebaseCredentials, {'storageBucket': bucket})
-        bucket = storage.bucket()
-    except Exception as ex:
-        console.critical('Unable to initialize Firebase connection.   Please check your firebase-kay.json file and the specified destination bucket!')
-        echo.on()
-        sys.exit()
+	
+	try:
+		firebaseCredentials = credentials.Certificate("firebase-key.json")
+		initialize_app(firebaseCredentials, {'storageBucket': bucket})
+		bucket = storage.bucket()
+	except Exception as ex:
+		console.critical('Unable to initialize Firebase connection.   Please check your firebase-kay.json file and the specified destination bucket!')
+		echo.on()
+		sys.exit()
 
-    console.log('Watching for file changes...')
-    while True:
-        time.sleep(100)
+
+	console.log('Watching for file changes...', '\n ', '\n ')
+	while True:
+		time.sleep(100)
 
 except KeyboardInterrupt:
-    observer.stop()
-    observer.join()        
-    echo.on()
-    sys.exit(1)
+	observer.stop()
+	observer.join()        
+	echo.on()
+	sys.exit(1)
 
 except Exception as ex:
 	console.error(ex)
