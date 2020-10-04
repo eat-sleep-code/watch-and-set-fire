@@ -16,6 +16,12 @@ wget -q https://raw.githubusercontent.com/eat-sleep-code/watchandsetfire/main/in
 sudo chmod +x ~/install-watchandsetfire.sh && ~/install-watchandsetfire.sh
 ```
 
+### Setup Your API Key
+
+To use this application, you will need to:
++ Provision and download your `firebase_admin` API key from the [Google Cloud Platform Console](https://console.cloud.google.com/iam-admin/serviceaccounts)
++ Rename the downloaded file to `firebase-key.json` and place the file within the `\home\pi\watchandsetfire` directory
+
 ---
 
 ## Usage
@@ -33,13 +39,6 @@ watchandsetfire <options>
 + _--bucket_ : Set the Firebase storage bucket URI    *(required)*
 + _--destination_ : Set the destination within the Firebase storage bucket     *(default: root of the storage bucket)*
 
----
-
-## API Key
-
-To use this application, you will need to:
-+ Provision and download your `firebase_admin` API key from the [Google Cloud Platform Console](https://console.cloud.google.com/iam-admin/serviceaccounts)
-+ Rename the downloaded file to `firebase-key.json` and place the file within the `\home\pi\watchandsetfire` directory
 
 ---
 
