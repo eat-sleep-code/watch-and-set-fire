@@ -53,7 +53,7 @@ def upload(filePath):
     try:
         global path
         global destination
-        fileObject = open(filePath, 'r')
+        fileObject = open(filePath, 'rb')
 
         filePath = filePath.replace(path, '')    
         if (destination.endswith('/')): 
@@ -62,7 +62,6 @@ def upload(filePath):
             destination = destination.replace('//', '/')
         if (destination.startswith('/')):
             destination = destination[1:]
-        console.warn(destination)
         blob = bucket.blob(destination)
         blob.upload_from_file(fileObject)
         blob.make_public()
