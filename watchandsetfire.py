@@ -166,17 +166,24 @@ try:
 	echo.off()
 	echo.clear()
 	try:
-		os.chdir(home) 
-	except:
+		os.chdir(paths.home()) 
+	except Exception as ex:
+		console.warn('Could not change to home directory. ' + str(ex))
 		pass
 
 	
 	try:
-		firebaseCredentials = credentials.Certificate("firebase-key.json")
-		initialize_app(firebaseCredentials, {'storageBucket': bucket})
-		bucket = storage.bucket()
+		keyFilePath = 'watchandsetfire/firebase-key.json'
+		if os.path.exists(keyFilePath) == False:
+			console.error('Could not locate file: ' + keyFilePath)
+			echo.on()
+			sys.exit()
+		else:
+			firebaseCredentials = credentials.Certificate(keyFilePath)
+			initialize_app(firebaseCredentials, {'storageBucket': bucket})
+			bucket = storage.bucket()
 	except Exception as ex:
-		console.critical('Unable to initialize Firebase connection.   Please check your firebase-kay.json file and the specified destination bucket!')
+		console.critical('Unable to initialize Firebase connection.   Please check your ' + keyFilePath + ' file and the specified destination bucket!')
 		echo.on()
 		sys.exit()
 
@@ -187,7 +194,7 @@ try:
 
 except KeyboardInterrupt:
 	observer.stop()
-	observer.join()        
+	observer.join()
 	echo.on()
 	sys.exit(1)
 

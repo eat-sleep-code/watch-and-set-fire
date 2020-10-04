@@ -16,13 +16,21 @@ class Paths:
 # === Echo Control =============================================================
 
 class Echo:
-    def off(self):
-        subprocess.run(['stty', '-echo'], check=True)
-    def on(self):
-        subprocess.run(['stty', 'echo'], check=True)
-    def clear(self):
-        subprocess.call('clear' if os.name == 'posix' else 'cls')
-
+	def off(self):
+		try:
+			subprocess.run(['stty', '-echo'], check=True, stderr=subprocess.STDOUT)
+		except: 
+			pass
+	def on(self):
+		try:
+			subprocess.run(['stty', 'echo'], check=True, stderr=subprocess.STDOUT)
+		except:
+			pass
+	def clear(self):
+		try:
+			subprocess.call('clear' if os.name == 'posix' else 'cls', stderr=subprocess.STDOUT)
+		except: 
+			pass
 
 
 # === Printing & Logging ======================================================
