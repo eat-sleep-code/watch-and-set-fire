@@ -49,56 +49,94 @@ destination = args.destination or '/'
 
 # === Functions ================================================================
 
+def getContentType(filePath):
+	fileName, fileExtension = os.path.splitext(filePath)
+	switch = {
+		'.jpg': 'image/jpeg',
+		'.jpeg': 'image/jpeg',
+		'.gif': 'image/gif', 
+		'.png': 'image/png',
+		'.tif': 'image/tiff',
+		'.tiff': 'image/tiff',
+		'.dng': 'image/x-adobe-dng', #image/dng
+		'.crw': 'image/x-canon-crw',
+		'.cr2': 'image/x-canon-cr2',
+		'.cr3': 'image/x-canon-cr3',
+		'.mp4': 'video/mp4',
+		'.mpeg': 'video/mpeg',
+		'.mov': 'video/quicktime',
+		'.mp3': 'audio/mpeg',
+		'.ogg': 'audio/ogg',
+		'.wav': 'audio/wav',
+		'.txt': 'text/plain',
+		'.html': 'text/html', 
+		'.json': 'application/json',
+		'.csv': 'text/csv',
+		'.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+		'.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+		'.pdf': 'application/pdf'
+	}
+	contentType = switch.get(fileExtension, 'application/octet-stream')
+	return contentType
+
+
 def upload(filePath):
 	try:
 		global path
 		global destination
+		time.sleep(1)
 		fileObject = open(filePath, 'rb')
 
 		filePath = filePath.replace(path, '')    
+		contentType = getContentType(filePath)
+
 		if (destination.endswith('/')): 
-			destination = (destination + filePath).replace('//', '/')
+			finalDestination = (destination + filePath).replace('//', '/')
 		else: 
-			destination = destination.replace('//', '/')
+			finalDestination = destination.replace('//', '/')
 
-		if (destination.startswith('/')):
-			destination = destination[1:]
-
-		blob = bucket.blob(destination)
-		blob.upload_from_file(fileObject)
+		if (finalDestination.startswith('/')):
+			finalDestination = finalDestination[1:]
+		
+		blob = bucket.blob(finalDestination)
+		blob.upload_from_file(fileObject, content_type = contentType)
 		blob.make_public()
 		console.info('Uploaded to: ' + str(blob.public_url), ' ', '\n')
 	except Exception as ex:
-		console.error('Unable to upload file: ' + destination + '\n ' + str(ex))
+		console.error('Unable to upload file: ' + finalDestination + '\n ' + str(ex))
 		pass
 
 # ------------------------------------------------------------------------------
 
 def onCreated(event):
-	console.info(str(event.src_path) + ' created')
-	upload(filePath=event.src_path)
+	filePath = event.src_path
+	console.info(filePath + ' created')
+	upload(filePath)
 
 # ------------------------------------------------------------------------------
 
 def onDeleted(event):
-	console.info(str(event.src_path) + ' deleted')     
+	filePath = event.src_path
+	console.info(filePath + ' deleted')     
 
 # ------------------------------------------------------------------------------
 
 def onModified(event):
 	global fileTime
-	newFileCreatedTime = os.stat(event.src_path).st_ctime
-	newFileModifiedTime = os.stat(event.src_path).st_mtime
+	filePath = event.src_path
+	newFileCreatedTime = os.stat(filePath).st_ctime
+	newFileModifiedTime = os.stat(filePath).st_mtime
 	if (newFileModifiedTime - newFileCreatedTime) > 0.5:
 		if (newFileModifiedTime - fileTime) > 0.5:
-			console.info(str(event.src_path) + ' modified')
-			upload(filePath=event.src_path)
+			console.info(filePath + ' modified')
+			upload(filePath)
 	fileTime = newFileModifiedTime
 
 # ------------------------------------------------------------------------------
 
 def onMoved(event):
-	console.info(str(event.src_path) + ' moved')
+	filePath = event.src_path
+	console.info(filePath + ' moved')
 
 
 # === Event Handler ============================================================
