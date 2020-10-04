@@ -39,7 +39,13 @@ watchandsetfire <options>
 + _--bucket_ : Set the Firebase storage bucket URI    *(required)*
 + _--destination_ : Set the destination within the Firebase storage bucket     *(default: root of the storage bucket)*
 
+---
+## Example
 
+The following will watch the *cucumbers* folder for new or modified files.   When detected, they will be uploaded to *example.appspot.com/pickles/[filename].[ext]*
+```
+watchandsetfire --path '/home/pi/cucumbers' --bucket 'example.appspot.com' --destination 'pickles/'
+```
 ---
 
 ## Autostart
