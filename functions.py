@@ -1,8 +1,17 @@
+from pathlib import Path
 import logging
 import os
 import subprocess
 
-logPath = '/home/pi/logs/watchandsetfire.log'
+
+class Paths: 
+	def home(self): 
+		return '/home/pi/'
+	def logs(self):
+		logsPath = Paths().home() + 'logs/'
+		os.makedirs(logsPath, exist_ok = True)
+		return logsPath
+
 
 # === Echo Control =============================================================
 
@@ -18,6 +27,7 @@ class Echo:
 
 # === Printing & Logging ======================================================
 
+logPath = Paths().logs() + 'watchandsetfire.log'
 logging.basicConfig(filename=logPath, level=logging.INFO, format='%(asctime)s: %(levelname)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 logging.getLogger('googleapiclient.discovery_cache').setLevel(logging.ERROR)
 
