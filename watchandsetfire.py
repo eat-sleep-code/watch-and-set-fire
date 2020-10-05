@@ -1,4 +1,5 @@
 from firebase_admin import credentials, initialize_app, storage
+from datetime import datetime, timedelta
 from functions import Paths, Echo, Console
 from watchdog.observers import Observer
 from watchdog.events import PatternMatchingEventHandler
@@ -8,7 +9,8 @@ import shutil
 import sys
 import time
 
-version = '2020.10.04'
+
+version = '2020.10.05'
 
 os.environ['TERM'] = 'xterm-256color'
 
@@ -17,6 +19,8 @@ console = Console()
 echo = Echo()
 paths = Paths()
 fileTime = 0
+errorCount = 0
+maxErrorsPerDay = 10
 
 # === Argument Handling ========================================================
 
@@ -54,7 +58,7 @@ def getContentType(filePath):
 	switch = {
 		'.jpg': 'image/jpeg',
 		'.jpeg': 'image/jpeg',
-		'.gif': 'image/gif', 
+		'.gif': 'image/gif',
 		'.png': 'image/png',
 		'.tif': 'image/tiff',
 		'.tiff': 'image/tiff',
@@ -69,7 +73,7 @@ def getContentType(filePath):
 		'.ogg': 'audio/ogg',
 		'.wav': 'audio/wav',
 		'.txt': 'text/plain',
-		'.html': 'text/html', 
+		'.html': 'text/html',
 		'.json': 'application/json',
 		'.csv': 'text/csv',
 		'.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -87,12 +91,12 @@ def upload(filePath):
 		time.sleep(1)
 		fileObject = open(filePath, 'rb')
 
-		filePath = filePath.replace(path, '')    
+		filePath = filePath.replace(path, '')
 		contentType = getContentType(filePath)
 
-		if (destination.endswith('/')): 
+		if (destination.endswith('/')):
 			finalDestination = (destination + filePath).replace('//', '/')
-		else: 
+		else:
 			finalDestination = destination.replace('//', '/')
 
 		if (finalDestination.startswith('/')):
@@ -104,6 +108,14 @@ def upload(filePath):
 		console.info('Uploaded to: ' + str(blob.public_url), ' ', '\n')
 	except Exception as ex:
 		console.error('Unable to upload file: ' + finalDestination + '\n ' + str(ex))
+		errorCount = errorCount + 1
+		if errorCount >= maxErrorsPerDay:
+			tomorrow = datetime.now() + timedelta(1)
+			midnight = datetime(year=tomorrow.year, month=tomrrow.month, day=tomorrow.day, hour=0, minute=0, second=0)
+			secondsUntilMidnight = (midnight - datetime.now()).seconds
+			console.warn('Maximum errors (' + str(maxErrorsPerDay) + ') per day exceeded.   Sleeping until midnight...')
+			time.sleep(secondsUntilMidnight)
+			errorCount = 0
 		pass
 
 # ------------------------------------------------------------------------------
@@ -117,7 +129,7 @@ def onCreated(event):
 
 def onDeleted(event):
 	filePath = event.src_path
-	console.info(filePath + ' deleted')     
+	console.info(filePath + ' deleted')
 
 # ------------------------------------------------------------------------------
 
@@ -166,7 +178,7 @@ try:
 	echo.off()
 	echo.clear()
 	try:
-		os.chdir(paths.home()) 
+		os.chdir(paths.home())
 	except Exception as ex:
 		console.warn('Could not change to home directory. ' + str(ex))
 		pass
@@ -175,7 +187,7 @@ try:
 	try:
 		keyFilePath = 'watchandsetfire/firebase-key.json'
 		if os.path.exists(keyFilePath) == False:
-			console.error('Could not locate file: ' + keyFilePath)
+			console.critical('Could not locate file: ' + keyFilePath)
 			echo.on()
 			sys.exit()
 		else:

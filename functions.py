@@ -4,8 +4,8 @@ import os
 import subprocess
 
 
-class Paths: 
-	def home(self): 
+class Paths:
+	def home(self):
 		return '/home/pi/'
 	def logs(self):
 		logsPath = Paths().home() + 'logs/'
@@ -19,7 +19,7 @@ class Echo:
 	def off(self):
 		try:
 			subprocess.run(['stty', '-echo'], check=True, stderr=subprocess.STDOUT)
-		except: 
+		except:
 			pass
 	def on(self):
 		try:
@@ -29,19 +29,25 @@ class Echo:
 	def clear(self):
 		try:
 			subprocess.call('clear' if os.name == 'posix' else 'cls', stderr=subprocess.STDOUT)
-		except: 
+		except:
 			pass
 
 
 # === Printing & Logging ======================================================
 
 logPath = Paths().logs() + 'watchandsetfire.log'
-logging.basicConfig(filename=logPath, level=logging.INFO, format='%(asctime)s: %(levelname)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+try:
+	logFile = open(logPath, 'a')
+	logFile.write('\n Watch and Set Fire \n ============================================================================== \n')
+	logFile.close()
+except:
+	pass
+logging.basicConfig(filename=logPath, level=logging.WARNING, format='%(asctime)s: %(levelname)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 logging.getLogger('googleapiclient.discovery_cache').setLevel(logging.ERROR)
 
 class Console:
 	def print(self, message, prefix = ' ', suffix = ' '):
-		print(str(prefix) + str(message) + str(suffix)) 
+		print(str(prefix) + str(message) + str(suffix))
 	def log(self, message, prefix = ' ', suffix = ' '):
 		print('\033[94m' + str(prefix) + str(message) + str(suffix)+ '\033[0m')
 		logging.info(str(message))
