@@ -10,7 +10,7 @@ sudo apt update
 echo ''
 echo -e '\033[93mInstalling prerequisites... \033[0m'
 sudo apt install -y git python3 python3-pip
-sudo pip3 install --upgrade six google-cloud-storage firebase firebase_admin watchdog
+sudo pip3 install --upgrade six google-cloud-storage firebase firebase_admin watchdog --force
 
 echo '\033[93mProvisioning logs... \033[0m'
 sudo mkdir -p /home/pi/logs
